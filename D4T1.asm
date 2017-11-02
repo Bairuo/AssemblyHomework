@@ -312,10 +312,12 @@ StorageInt_Full:
 
 StorageInt_Normal:
            MOV  AL, [SI]
+           SUB  AL, '0'
            MOV  DL, 10
            MUL  DL
            MOV  AH, 0
            ADD  AL, [SI + 1]
+           SUB  AL, '0'
            MOV  [BX], AL
 StorageInt_End:
 
@@ -347,8 +349,7 @@ DataStorage PROC NEAR
 
          Print MessageName              ;录入学生姓名
          call UserInput
-         MOV  AL, 10
-         SUB  AL, BufferL
+         MOV  AL, BufferL
          MOV  AH, 0
 
          MOV  CX, 10
@@ -374,6 +375,8 @@ DataStorage_L:
          call UserInput
 
          ADD  BX, Chinese
+         MOV  AL, BufferL
+         MOV  AX, 0
          StorageScore <OFFSET BufferD>, AX, BX
 
 
@@ -382,6 +385,8 @@ DataStorage_L:
          call UserInput
 
          INC  BX
+         MOV  AL, BufferL
+         MOV  AX, 0
          StorageScore <OFFSET BufferD>, AX, BX
 
          call NewLine                   ;录入英语成绩
@@ -389,6 +394,8 @@ DataStorage_L:
          call UserInput
 
          INC  BX
+         MOV  AL, BufferL
+         MOV  AX, 0
          StorageScore <OFFSET BufferD>, AX, BX
 
          call NewLine
