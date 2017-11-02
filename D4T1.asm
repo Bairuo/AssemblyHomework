@@ -7,7 +7,7 @@ STACK    SEGMENT     USE16   STACK
 	     DB  200   DUP(0)
 STACK    ENDS
 
-N    EQU  5
+N    EQU  3
 UNIT EQU  14    ;每个学生14个字节
 Chinese  EQU  10
 Math     EQU  11
@@ -21,14 +21,14 @@ BUF      DB   'zhangsan', 0, 0
          DB   'lisi', 6 DUP(0)
          DB   80, 100, 70, ?
 
-         DB   N - 3 DUP('TempValue', 0, 80, 90, 95, ?)
+         ;DB   N - 3 DUP('TempValue', 0, 80, 90, 95, ?)
         
          DB   'jiangzr', 0, 0, 0
          DB   85, 85, 100, ?
 MESSAGE_MENU     DB   '1 Enter names and scores of student', 0DH, 0AH
                  DB   '2 Calc average score of every student', 0DH, 0AH
                  DB   '3 Sorting students by score from high to low', 0DH, 0AH
-                 DB   '4 Print average scores', 0DH, 0AH
+                 DB   '4 Print score report', 0DH, 0AH
                  DB   '5 Exit$'
 
 MessageName      DB   'Please enter the name of student : $'
@@ -36,16 +36,9 @@ MessageChinese   DB   'Please enter the Chinese socre of sutdent : $'
 MessageMath      DB   'Please enter the Math score of student : $'
 MessageEnglish   DB   'Please enter the English score of student : $'
 
-MESSAGE_NOFIND   DB   'Can not find this student.$'
-MESSAGE_FIND     DB   'The grade of this student : $'
-MESSAGE_ILLEGAL  DB   'Illegal input.$'
+
 MESSAGE_Report   DB   'Name  Chinese  Math  English  Average $'
-AVERAGE_VALUE    DB   '    $'
-JUDGE_A  DB   'A$'
-JUDGE_B  DB   'B$'
-JUDGE_C  DB   'C$'
-JUDGE_D  DB   'D$'
-JUDGE_F  DB   'F$'
+ValueDisplay    DB   '     $'
 POIN     DW   0
 CRLF     DB   0DH, 0AH, '$'
 SPACE    DB   '  $'
@@ -151,71 +144,138 @@ CalcAverageL:
          ret
 CalcAverage ENDP
 
-
-PromptIllegal:
-         call NewLine
-         Print MESSAGE_ILLEGAL
-         call NewLine
-         JMP  Search
-
 ;-------------------------------------------------;
-; 子程序名：JudgeDisplay
-; 功能：根据成绩显示评价等级
-; 入口参数：学生成绩
+; 子程序名：PrintName
+; 功能：打印学生姓名
+; 入口参数：学生首地址
 ; 出口参数：无
 ;-------------------------------------------------;
-JudgeDisplay PROC NEAR
+PrintName PROC NEAR
+         PUSH BP
+         MOV  BP, SP
+         PUSH AX
+         PUSH BX
+
+         MOV  BX, 4[BP]
+         MOV  AL, [BX + Chinese]
+         MOV  BYTE PTR [BX + Chinese], '$'
+         Print [BX]
+         MOV  [BX + Chinese], AL
+
+         POP  BX
+         POP  AX
+         POP  BP
+         ret  2
+PrintName ENDP
+;-------------------------------------------------;
+; 子程序名：PrintScore
+; 功能：打印成绩（字节）
+; 入口参数：成绩地址
+; 出口参数：无
+;-------------------------------------------------;
+PrintScore PROC NEAR
          PUSH BP
          MOV  BP, SP
          PUSH AX
          PUSH BX
          PUSH CX
-         PUSH DX
 
-         MOV  AL, 4[BP]
-         
-         CMP  AL, 90
-         JGE  FlagA
-         CMP  AL, 80
-         JGE  FlagB
-         CMP  AL, 70
-         JGE  FlagC
-         CMP  AL, 60
-         JGE  FlagD
-         JMP  FlagF
+         MOV  BX, 4[BP]
+         MOV  AL, [BX]
+         CMP  AL, 100
+         JNE  PrintScore_Normal
+         JMP  PrintScore_Full
 
+PrintScore_Full:
+         MOV  ValueDisplay, '1'
+         MOV  ValueDisplay + 1, '0'
+         MOV  ValueDisplay + 2, '0'
+         JMP  PrintScore_Print
 
-FlagA:   Print JUDGE_A
-         JMP  JugeDisplayR
-FlagB:   Print JUDGE_B
-         JMP  JugeDisplayR
-FlagC:   Print JUDGE_C
-         JMP  JugeDisplayR
-FlagD:   Print JUDGE_D
-         JMP  JugeDisplayR
-FlagF:   Print JUDGE_F
-         JMP  JugeDisplayR
-
-JugeDisplayR:                            ;选做题第三小问，显示平均成绩
+PrintScore_Normal:
          MOV  AH, 0
          MOV  CL, 10
          DIV  CL
          ADD  AL, '0'
          ADD  AH, '0'
-         MOV  AVERAGE_VALUE, AL
-         MOV  AVERAGE_VALUE + 1, AH
+         MOV  ValueDisplay, AL
+         MOV  ValueDisplay + 1, AH
+         MOV  BYTE PTR ValueDisplay + 2, 0
+         JMP  PrintScore_Print
 
-         Print MESSAGE_Report
-         call NewLine 
+PrintScore_Print:
+         Print ValueDisplay
 
-         POP  DX
-         POP  CX
+         POP CX
+         POP BX
+         POP AX
+         POP BP
+         ret 2
+PrintScore ENDP
+;-------------------------------------------------;
+; 子程序名：PrintReport
+; 功能：打印指定学生成绩单
+; 入口参数：学生首地址
+; 出口参数：无
+;-------------------------------------------------;
+PrintReport PROC NEAR
+         PUSH BP
+         MOV  BP, SP
+         PUSH BX
+
+         MOV  BX, 4[BP]
+         PUSH BX
+         call PrintName
+         ADD  BX, Chinese
+         PUSH BX
+         call PrintScore
+         ADD  BX, 1
+         PUSH BX
+         call PrintScore
+         ADD  BX, 1
+         PUSH BX
+         call PrintScore
+         ADD  BX, 1
+         PUSH BX
+         call PrintScore
+
+         call NewLine
+
          POP  BX
+         POP  BP
+         ret  2
+PrintReport ENDP
+;-------------------------------------------------;
+; 子程序名：PrintAllReport
+; 功能：打印所有学生成绩单
+; 入口参数：学生数据区首地址
+; 出口参数：无
+;-------------------------------------------------;
+PrintAllReport PROC NEAR
+         PUSH BP
+         MOV  BP, SP
+         PUSH AX
+         PUSH CX
+         
+         call NewLine
+         call NewLine
+         Print MESSAGE_Report
+         call NewLine
+
+         MOV  AX, 4[BP]
+         MOV  CX, N
+PrintAllReport_L:
+         PUSH AX
+         call PrintReport
+         ADD  AX, UNIT
+         LOOP PrintAllReport_L
+         call NewLine
+
+         POP  CX
          POP  AX
          POP  BP
          ret  2
-JudgeDisplay ENDP
-
+PrintAllReport ENDP
 ;-------------------------------------------------;
 ; 菜单功能一: 录入N个学生
 ; 入口参数：学生起始存储位置
@@ -315,24 +375,28 @@ START:   MOV  AX, DATA
          MOV  AX, STACK
          MOV  SS, AX
 
-Search:  
+DisplayMenu:  
          Print MESSAGE_MENU   ;显示菜单
-         call NEWLINE
- 
+         call NewLine
+         call NewLine
+
+WaitCommend:
          call UserInput
 
          CMP  BufferL, 1           ;根据用户选择的菜单项完成相应功能
-         JNE  Search
+         JNE  DisplayMenu
          CMP  BufferD, '5'
          JE   exit
          CMP  BufferD, '4'
          JE   Menu4
+         CMP  BufferD, '3'
+         JE   Menu3
          CMP  BufferD, '2'
          JE   Menu2
          CMP  BufferD, '1'
          JE   Menu1
 
-         JMP  Search
+         JMP  DisplayMenu
 
 Menu1:
          MOV  AX, OFFSET BUF
@@ -343,23 +407,20 @@ Menu1L:
          ADD  AX, UNIT
          LOOP Menu1L
          call NewLine
-         JMP  Search
+         JMP  WaitCommend
 
 Menu2:
          call CalcAverage
          call NewLine
-         JMP  Search
+         JMP  WaitCommend
+
+Menu3:
+         JMP  WaitCommend
 
 Menu4:
-         MOV  AX, OFFSET BUF
-         MOV  CX, N
-Menu4L:
-         PUSH AX
-         ;call PrintStorage
-         ADD  AX, UNIT
-         LOOP Menu4L
-         call NewLine
-         JMP  Search
+         PUSH OFFSET BUF
+         call PrintAllReport
+         JMP  WaitCommend
          
 exit:    MOV  AH,4CH    ;程序结束
          INT  21H
