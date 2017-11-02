@@ -100,7 +100,7 @@ Print    MACRO Address
          INT  21H
          POP  AX
          POP  DX
-         ENDM
+ENDM
 ;-------------------------------------------------;
 ; 子程序名：CalcAverage
 ; 功能：计算所有学生的平均成绩
@@ -277,7 +277,58 @@ PrintAllReport_L:
          ret  2
 PrintAllReport ENDP
 ;-------------------------------------------------;
-; 菜单功能一: 录入N个学生
+; 子程序名：ToInt
+; 功能：将指定长度的字符串转换为数字（不超过100）以字节形式储存到指定位置
+; 入口参数：字符串位置，字符串长度，存储位置
+; 出口参数：无
+;-------------------------------------------------;
+StorageScore MACRO origin, length, target
+           PUSH origin
+           PUSH length
+           PUSH target
+           call StorageInt
+ENDM
+
+StorageInt PROC NEAR
+           PUSH BP
+           MOV  BP, SP
+           PUSH AX
+           PUSH BX
+           PUSH CX
+           PUSH DX
+           PUSH SI
+
+           MOV  SI, 4[BP]
+           MOV  CX, 6[BP]
+           MOV  BX, 8[BP]
+
+           CMP  CX, 3
+           JNE  StorageInt_Normal
+           JMP  StorageInt_Full
+
+StorageInt_Full:
+           MOV  BYTE PTR [BX], 100
+           JMP  StorageInt_End
+
+StorageInt_Normal:
+           MOV  AL, [SI]
+           MOV  DL, 10
+           MUL  DL
+           MOV  AH, 0
+           ADD  AL, [SI + 1]
+           MOV  [BX], AL
+StorageInt_End:
+
+           POP  SI
+           POP  DX
+           POP  CX
+           POP  BX
+           POP  AX
+           POP  BP
+           ret 6
+StorageInt ENDP
+;-------------------------------------------------;
+; 菜单功能一: 录入学生
 ; 入口参数：学生起始存储位置
 ;-------------------------------------------------;
 DataStorage PROC NEAR
@@ -291,69 +342,56 @@ DataStorage PROC NEAR
          PUSH DI;
 
          MOV  BX, 4[BP]
-         MOV  DI, BX
 
          call NewLine
 
-         Print MessageName           ;录入学生姓名
+         Print MessageName              ;录入学生姓名
          call UserInput
-         MOV  CL, BufferL
-         MOV  CH, 0
-DataStorageL1:                         
+         MOV  AL, 10
+         SUB  AL, BufferL
+         MOV  AH, 0
+
+         MOV  CX, 10
+         SUB  CX, AX
          MOV  SI, OFFSET BufferD
-         MOV  BP, CX
-         MOV  DL, DS:[SI + BP - 1]
-         MOV  [BX], DL
-         INC  BX
-         LOOP DataStorageL1
-         MOV  BX, DI
-         ADD  BX, Chinese
+         ADD  SI, AX
+DataStorage_L:
+         MOV  BYTE PTR [SI], 0
+         INC  SI
+         LOOP DataStorage_L
+
+         MOV  DI, BX
+         MOV  SI, OFFSET BufferD
+         MOV  BP, DS
+         MOV  ES, BP
+         MOV  CX, 10
+         CLD
+         REP  MOVSB
 
 
          call NewLine                   ;录入语文成绩
          Print MessageChinese
          call UserInput
-         MOV  CL, BufferL
-         MOV  CH, 0
-DataStorageL2:                         
-         MOV  SI, OFFSET BufferD
-         MOV  BP, CX
-         MOV  DL, DS:[SI + BP - 1]
-         MOV  [BX], DL
-         INC  BX
-         LOOP DataStorageL2
-         MOV  BX, DI
-         ADD  BX, Math
+
+         ADD  BX, Chinese
+         StorageScore <OFFSET BufferD>, AX, BX
 
 
          call NewLine                   ;录入数学成绩
          Print MessageMath
          call UserInput
-         MOV  CL, BufferL
-         MOV  CH, 0
-DataStorageL3:                         
-         MOV  SI, OFFSET BufferD
-         MOV  BP, CX
-         MOV  DL, DS:[SI + BP - 1]
-         MOV  [BX], DL
-         INC  BX
-         LOOP DataStorageL3
-         MOV  BX, DI
-         ADD  BX, English
 
+         INC  BX
+         StorageScore <OFFSET BufferD>, AX, BX
 
          call NewLine                   ;录入英语成绩
          Print MessageEnglish
          call UserInput
-         MOV  CL, BufferL
-         MOV  CH, 0
-DataStorageL4:                         
-         MOV  SI, OFFSET BufferD
-         MOV  BP, CX
-         MOV  DL, DS:[SI + BP - 1]
-         MOV  [BX], DL
+
          INC  BX
-         LOOP DataStorageL4
+         StorageScore <OFFSET BufferD>, AX, BX
+
+         call NewLine
 
          POP  DI
          POP  SI
