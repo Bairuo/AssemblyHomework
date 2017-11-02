@@ -1,6 +1,6 @@
-        NAME    WAN1
-        EXTERN  PrintStorage:NEAR
-        PUBLIC  BUF, PrintDX, NewLine
+        ;NAME    WAN1
+        ;EXTERN  PrintStorage:NEAR
+        ;PUBLIC  BUF, NewLine
 
 .386
 STACK    SEGMENT     USE16   STACK
@@ -94,66 +94,20 @@ UserInput PROC NEAR
 UserInput ENDP
 
 ;-------------------------------------------------;
-; 子程序名：PrintDX
-; 功能：打印DX所指向内容
-; 入口参数：DX——存放字符串首字节偏移地址
+; 宏名：Print
+; 功能：打印参数所指向内容
+; 入口参数：存放字符串首字节偏移地址
 ; 出口参数：无
 ;-------------------------------------------------;
-PrintDX  PROC NEAR
-         PUSH AX                  
+Print    MACRO Address
+         PUSH DX
+         PUSH AX
+         LEA  DX, Address
          MOV  AH, 9
          INT  21H
          POP  AX
-         ret
-PrintDX  ENDP
-
-;-------------------------------------------------;
-; 子程序名：Strcmp
-; 功能：比较两个字符串是否相同
-; 出口参数：AX，1表示相同，0表示不同
-;-------------------------------------------------;
-Strcmp   PROC NEAR
-         PUSH BP
-         MOV  BP, SP
-         
-         PUSH BX
-         PUSH SI
-         PUSH CX
-         PUSH DX
-
-         MOV  BX, 4[BP]
-         MOV  SI, 6[BP]
-
-         MOV  CX, 10
-
-strcmpL:      
-         MOV  DL, [BX]          ;匹配学生姓名
-         CMP  DL, [SI]
-         JNE  strcmpFail
-
-         INC  BX
-         INC  SI
-         LOOP strcmpL
-         JMP  strcmpSuccess     ;当前的学生匹配
-
-strcmpFail:    
-         MOV  AX, 0
-         JMP  strcmpEnd
-strcmpSuccess: 
-         MOV  AX, 1
-         JMP  strcmpEnd
-strcmpEnd:
-         POP DX
-         POP CX
-         POP SI
-         POP BX
-
-         POP  BP
-         ret  4
-
-Strcmp   ENDP
-
-
+         POP  DX
+         ENDM
 ;-------------------------------------------------;
 ; 子程序名：CalcAverage
 ; 功能：计算所有学生的平均成绩
@@ -200,8 +154,7 @@ CalcAverage ENDP
 
 PromptIllegal:
          call NewLine
-         LEA  DX, MESSAGE_ILLEGAL
-         call PrintDX
+         Print MESSAGE_ILLEGAL
          call NewLine
          JMP  Search
 
@@ -232,15 +185,15 @@ JudgeDisplay PROC NEAR
          JMP  FlagF
 
 
-FlagA:   LEA  DX, JUDGE_A
+FlagA:   Print JUDGE_A
          JMP  JugeDisplayR
-FlagB:   LEA  DX, JUDGE_B
+FlagB:   Print JUDGE_B
          JMP  JugeDisplayR
-FlagC:   LEA  DX, JUDGE_C
+FlagC:   Print JUDGE_C
          JMP  JugeDisplayR
-FlagD:   LEA  DX, JUDGE_D
+FlagD:   Print JUDGE_D
          JMP  JugeDisplayR
-FlagF:   LEA  DX, JUDGE_F
+FlagF:   Print JUDGE_F
          JMP  JugeDisplayR
 
 JugeDisplayR:                            ;选做题第三小问，显示平均成绩
@@ -251,10 +204,8 @@ JugeDisplayR:                            ;选做题第三小问，显示平均�
          ADD  AH, '0'
          MOV  AVERAGE_VALUE, AL
          MOV  AVERAGE_VALUE + 1, AH
-         call PrintDX
 
-         LEA  DX, MESSAGE_AVERAGE
-         call PrintDX
+         Print MESSAGE_AVERAGE
          call NewLine 
 
          POP  DX
@@ -280,12 +231,11 @@ DataStorage PROC NEAR
          PUSH DI;
 
          MOV  BX, 4[BP]
-         mov  DI, BX
+         MOV  DI, BX
 
          call NewLine
 
-         LEA  DX, MessageName           ;录入学生姓名
-         call PrintDX
+         Print MessageName           ;录入学生姓名
          call UserInput
          MOV  CL, nameL
          MOV  CH, 0
@@ -301,8 +251,7 @@ DataStorageL1:
 
 
          call NewLine                   ;录入语文成绩
-         LEA  DX, MessageChinese
-         call PrintDX
+         Print MessageChinese
          call UserInput
          MOV  CL, nameL
          MOV  CH, 0
@@ -318,8 +267,7 @@ DataStorageL2:
 
 
          call NewLine                   ;录入数学成绩
-         LEA  DX, MessageMath
-         call PrintDX
+         Print MessageMath
          call UserInput
          MOV  CL, nameL
          MOV  CH, 0
@@ -335,8 +283,7 @@ DataStorageL3:
 
 
          call NewLine                   ;录入英语成绩
-         LEA  DX, MessageEnglish
-         call PrintDX
+         Print MessageEnglish
          call UserInput
          MOV  CL, nameL
          MOV  CH, 0
@@ -369,8 +316,7 @@ START:   MOV  AX, DATA
          MOV  SS, AX
 
 Search:  
-         LEA  DX, MESSAGE_MENU   ;显示菜单
-         call PrintDX
+         Print MESSAGE_MENU   ;显示菜单
          call NEWLINE
  
          call UserInput
@@ -409,76 +355,11 @@ Menu4:
          MOV  CX, N
 Menu4L:
          PUSH AX
-         call PrintStorage
+         ;call PrintStorage
          ADD  AX, UNIT
          LOOP Menu4L
          call NewLine
          JMP  Search
-
-Search_Handle:
-         MOV  CL, nameL           ;选做题第1问功能合法性检测
-         MOV  CH, 0
-         MOV  SI, OFFSET in_name
-Search_Test:
-         MOV  BX, 0
-         MOV  AL, [SI]
-         CMP  AL, 'A'
-         JB   PromptIllegal
-         CMP  AL, 'z'
-         JG   PromptIllegal
-         CMP  AL, 'Z'
-         JB   Search_TestEnd
-         CMP  AL, 'a'
-         JB   PromptIllegal
-
-         INC  SI
-         LOOP Search_Test
-
-Search_TestEnd:
-
-         MOV  BL, INNAME + 1      ;处理输入的回车
-         MOV  BH, 0
-         MOV  BYTE PTR  INNAME + 2[BX], 0
-
-;-------------------------------------------------;
-;功能二      ：查找学生
-;-------------------------------------------------;
-         MOV  CX, N
-         MOV  DX, 0
-
-s1:      MOV  BX, DX
-         ADD  BX, OFFSET BUF
-
-         PUSH  BX
-         PUSH  WORD PTR OFFSET in_name
-
-         call  Strcmp
-         CMP  AX, 1
-         JNE  fail
-         JMP  success
-
-fail:    ADD  DX, UNIT          ;查找下一个学生
-         LOOP s1
-
-         call NewLine           ;完全未找到
-         LEA  DX, MESSAGE_NOFIND
-         call PrintDX
-         call NewLine   
-         JMP  Search
-         
-success: call NewLine           ;找到退出
-         LEA  DX, MESSAGE_FIND
-         MOV  AH, 9
-         INT  21H 
-
-         ;将起始地址保存到POIN字变量中
-         ;EBX减去加的量为起始地址
-         MOV  POIN, BX
-
-         MOV  AL, [BX + Average]
-         MOV  AH, 0
-         PUSH AX
-         call JudgeDisplay
          
 exit:    MOV  AH,4CH    ;程序结束
          INT  21H
