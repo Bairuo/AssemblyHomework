@@ -39,8 +39,8 @@ MessageEnglish   DB   'Please enter the English score of student : $'
 MESSAGE_NOFIND   DB   'Can not find this student.$'
 MESSAGE_FIND     DB   'The grade of this student : $'
 MESSAGE_ILLEGAL  DB   'Illegal input.$'
-MESSAGE_AVERAGE  DB   ' ,Average socre : '
-AVERAGE_VALUE    DB   '  $'
+MESSAGE_Report   DB   'Name  Chinese  Math  English  Average $'
+AVERAGE_VALUE    DB   '    $'
 JUDGE_A  DB   'A$'
 JUDGE_B  DB   'B$'
 JUDGE_C  DB   'C$'
@@ -49,9 +49,9 @@ JUDGE_F  DB   'F$'
 POIN     DW   0
 CRLF     DB   0DH, 0AH, '$'
 SPACE    DB   '  $'
-INNAME   DB   11
-nameL    DB   0
-in_name  DB   11  DUP(0)
+Buffer   DB   11
+BufferL  DB   0
+BufferD  DB   11  DUP(0)
          DB   '$'
 DATA     ENDS
 
@@ -85,7 +85,7 @@ NewLine  ENDP
 UserInput PROC NEAR
          PUSH DX
          PUSH AX
-         LEA  DX, INNAME
+         LEA  DX, Buffer
          MOV  AH, 10
          INT  21H
          POP  AX
@@ -205,7 +205,7 @@ JugeDisplayR:                            ;选做题第三小问，显示平均�
          MOV  AVERAGE_VALUE, AL
          MOV  AVERAGE_VALUE + 1, AH
 
-         Print MESSAGE_AVERAGE
+         Print MESSAGE_Report
          call NewLine 
 
          POP  DX
@@ -237,10 +237,10 @@ DataStorage PROC NEAR
 
          Print MessageName           ;录入学生姓名
          call UserInput
-         MOV  CL, nameL
+         MOV  CL, BufferL
          MOV  CH, 0
 DataStorageL1:                         
-         MOV  SI, OFFSET in_name
+         MOV  SI, OFFSET BufferD
          MOV  BP, CX
          MOV  DL, DS:[SI + BP - 1]
          MOV  [BX], DL
@@ -253,10 +253,10 @@ DataStorageL1:
          call NewLine                   ;录入语文成绩
          Print MessageChinese
          call UserInput
-         MOV  CL, nameL
+         MOV  CL, BufferL
          MOV  CH, 0
 DataStorageL2:                         
-         MOV  SI, OFFSET in_name
+         MOV  SI, OFFSET BufferD
          MOV  BP, CX
          MOV  DL, DS:[SI + BP - 1]
          MOV  [BX], DL
@@ -269,10 +269,10 @@ DataStorageL2:
          call NewLine                   ;录入数学成绩
          Print MessageMath
          call UserInput
-         MOV  CL, nameL
+         MOV  CL, BufferL
          MOV  CH, 0
 DataStorageL3:                         
-         MOV  SI, OFFSET in_name
+         MOV  SI, OFFSET BufferD
          MOV  BP, CX
          MOV  DL, DS:[SI + BP - 1]
          MOV  [BX], DL
@@ -285,10 +285,10 @@ DataStorageL3:
          call NewLine                   ;录入英语成绩
          Print MessageEnglish
          call UserInput
-         MOV  CL, nameL
+         MOV  CL, BufferL
          MOV  CH, 0
 DataStorageL4:                         
-         MOV  SI, OFFSET in_name
+         MOV  SI, OFFSET BufferD
          MOV  BP, CX
          MOV  DL, DS:[SI + BP - 1]
          MOV  [BX], DL
@@ -321,15 +321,15 @@ Search:
  
          call UserInput
 
-         CMP  nameL, 1           ;根据用户选择的菜单项完成相应功能
+         CMP  BufferL, 1           ;根据用户选择的菜单项完成相应功能
          JNE  Search
-         CMP  in_name, '5'
+         CMP  BufferD, '5'
          JE   exit
-         CMP  in_name, '4'
+         CMP  BufferD, '4'
          JE   Menu4
-         CMP  in_name, '2'
+         CMP  BufferD, '2'
          JE   Menu2
-         CMP  in_name, '1'
+         CMP  BufferD, '1'
          JE   Menu1
 
          JMP  Search
