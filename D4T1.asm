@@ -298,9 +298,9 @@ StorageInt PROC NEAR
            PUSH DX
            PUSH SI
 
-           MOV  SI, 4[BP]
+           MOV  SI, 8[BP]
            MOV  CX, 6[BP]
-           MOV  BX, 8[BP]
+           MOV  BX, 4[BP]
 
            CMP  CX, 3
            JNE  StorageInt_Normal
@@ -376,7 +376,7 @@ DataStorage_L:
 
          ADD  BX, Chinese
          MOV  AL, BufferL
-         MOV  AX, 0
+         MOV  AH, 0
          StorageScore <OFFSET BufferD>, AX, BX
 
 
@@ -386,7 +386,7 @@ DataStorage_L:
 
          INC  BX
          MOV  AL, BufferL
-         MOV  AX, 0
+         MOV  AH, 0
          StorageScore <OFFSET BufferD>, AX, BX
 
          call NewLine                   ;录入英语成绩
@@ -395,7 +395,7 @@ DataStorage_L:
 
          INC  BX
          MOV  AL, BufferL
-         MOV  AX, 0
+         MOV  AH, 0
          StorageScore <OFFSET BufferD>, AX, BX
 
          call NewLine
