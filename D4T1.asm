@@ -435,18 +435,86 @@ DataStorage ENDP
 ; 出口参数：无
 ;-------------------------------------------------;
 Exchange PROC NEAR
+         PUSH  BP
+         MOV   BP, SP
+         PUSH  AX
+         PUSH  BX
+         PUSH  CX
+         PUSH  SI
+         PUSH  DI
 
+         MOV  AX, 4[BP]
+         MOV  BX, 6[BP]
+         
+         MOV  BP, DS
+         MOV  ES, BP
 
-         ret
+         MOV  SI, AX                    ;AX → buffer
+         MOV  DI, OFFSET BufferD
+         MOV  CX, UNIT
+         CLD
+         REP  MOVSB
+
+         MOV  SI, BX                    ;BX → AX
+         MOV  DI, AX
+         MOV  CX, UNIT
+         CLD
+         REP  MOVSB
+
+         MOV  SI, OFFSET BufferD        ;buffer → BX
+         MOV  DI, BX
+         MOV  CX, UNIT
+         CLD
+         REP  MOVSB
+
+         POP  DI
+         POP  SI
+         POP  CX
+         POP  BX
+         POP  AX
+
+         POP  BP
+         ret 4
 Exchange ENDP
 ;-------------------------------------------------;
 ; 子程序名：Sort
-; 功能：按平均分从高到低对学生排序，排序结果仍存放在原缓冲区中
+; 功能：按平均分从高到低对学生排序，排序结果仍存放在原缓冲区中（冒泡排序）
 ; 入口参数：无
 ; 出口参数：无
 ;-------------------------------------------------;
 Sort    PROC NEAR
+        PUSHA
 
+        MOV   BX, OFFSET BUF
+        MOV   CX, N - 1
+Sort_L1:
+        PUSH  BX
+        PUSH  CX
+
+
+Sort_L2:
+        MOV   AL, [BX + average]
+        MOV   AH, [BX + UNIT + average]
+        CMP   AL, AH
+        JB    Sort_change
+        JMP   Sort_notChange 
+Sort_change:
+        MOV   DX, BX;
+        PUSH  DX
+        ADD   DX, UNIT
+        PUSH  DX
+        call  Exchange
+Sort_notChange:
+        ADD   BX, UNIT
+        LOOP  Sort_L2
+
+
+        POP   CX
+        POP   BX
+        ADD   BX, UNIT
+        LOOP  Sort_L1
+
+        POPA
         ret
 Sort    ENDP
 ;-------------------------------------------------;
@@ -498,6 +566,8 @@ Menu2:
          JMP  WaitCommend
 
 Menu3:
+         call Sort
+         call NewLine
          JMP  WaitCommend
 
 Menu4:
