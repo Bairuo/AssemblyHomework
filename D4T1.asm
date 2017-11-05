@@ -183,13 +183,22 @@ PrintScore PROC NEAR
          MOV  BX, 4[BP]
          MOV  AL, [BX]
          CMP  AL, 100
-         JNE  PrintScore_Normal
-         JMP  PrintScore_Full
+         JE   PrintScore_Full
+         CMP  AL, 10
+         JB   PrintScore_Single
+         JMP  PrintScore_Normal
 
 PrintScore_Full:
          MOV  ValueDisplay, '1'
          MOV  ValueDisplay + 1, '0'
          MOV  ValueDisplay + 2, '0'
+         JMP  PrintScore_Print
+
+PrintScore_Single:
+         ADD  AL, '0'
+         MOV  ValueDisplay, AL
+         MOV  ValueDisplay + 1, 0
+         MOV  ValueDisplay + 2, 0
          JMP  PrintScore_Print
 
 PrintScore_Normal:
@@ -303,11 +312,19 @@ StorageInt PROC NEAR
            MOV  BX, 4[BP]
 
            CMP  CX, 3
-           JNE  StorageInt_Normal
-           JMP  StorageInt_Full
+           JE   StorageInt_Full
+           CMP  CX, 1
+           JE   StorageInt_Single
+           JMP  StorageInt_Normal
 
 StorageInt_Full:
            MOV  BYTE PTR [BX], 100
+           JMP  StorageInt_End
+
+StorageInt_Single:
+           MOV  AL, [SI]
+           SUB  AL, '0'
+           MOV  [BX], AL
            JMP  StorageInt_End
 
 StorageInt_Normal:
