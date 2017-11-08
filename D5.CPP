@@ -45,22 +45,23 @@ void DataEntry()
 
     for(i = 0; i < N; i++)
     {
-        printf("Please enter the name of student : \n");
+        printf("Please enter the name of student : ");
         scanf("%s", start);
 
-        printf("Please enter the Chinese score of student : \n");
+        printf("Please enter the Chinese score of student : ");
         scanf("%s", score);
         start[Chinese] = GetByteInt(score);
 
-        printf("Please enter the Math score of student : \n");
+        printf("Please enter the Math score of student : ");
         scanf("%s", score);
         start[Math] = GetByteInt(score);
 
-        printf("Please enter the English score of student : \n");
+        printf("Please enter the English score of student : ");
         scanf("%s", score);
         start[English] = GetByteInt(score);
 
         start += Unit;
+        printf("\n");
     }
 }
 

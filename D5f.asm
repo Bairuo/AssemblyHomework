@@ -17,31 +17,6 @@ STACK1    ENDS
 _TEXT     SEGMENT   USE16   PARA  PUBLIC  'CODE'
 	     ASSUME CS:_TEXT, SS: STACK1
 
-
-UseLocalBegin MACRO             ;使用本地的数据段和栈
-        PUSHA
-
-        MOV  SI, DS
-        MOV  DI, SS
-
-        MOV  AX, DATA
-        MOV  BX, STACK1
-
-        MOV  DS, AX
-        MOV  SS, BX
-ENDM
-
-UseLocalEnd MACRO
-        MOV  AX, SI
-        MOV  BX, DI
-
-        MOV  DS, AX
-        MOV  SS, BX       
-
-        POPA
-ENDM
-
-
 ;-------------------------------------------------;
 ; 子程序名：_Sort
 ; 功能：按平均分从高到低对学生排序，排序结果仍存放在原缓冲区中（冒泡排序）
@@ -65,8 +40,8 @@ _CalcAverage PROC NEAR
          MOV  AX, 0
 
 CalcAverageL:      
-         MOV  BX, AX
-         ADD  BX, OFFSET _BUF
+         LEA  BX, _BUF
+         ADD  BX, AX
          PUSH AX
          PUSH CX
 
