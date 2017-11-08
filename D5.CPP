@@ -9,6 +9,7 @@ extern "C" void CalcAverage(void);
 extern "C" void Sort(void);
 
 char BUF[N * Unit];
+char BufferD[11];
 
 // debug/default data
 char students[] = "wangwu\0   \x64\x55\x50\0lisi\0     \x50\x64\x46\0jiangzr\0  \x55\x55\x64\0";
@@ -67,7 +68,6 @@ void DataEntry()
 
 void PrintReport()
 {
-    //char score[2] = {' ', '\0'};
     char *start = BUF;
     int i;
 
@@ -90,7 +90,7 @@ void PrintMenu()
 {
     printf("1 Enter names and scores of student\n");
     printf("2 Calc average score of every student\n");
-    printf("3 Sorting students by score from high to low\n");
+    printf("3 Sort students by score from high to low\n");
     printf("4 Print score report\n");
     printf("5 Exit\n\n");
 }

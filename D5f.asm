@@ -1,5 +1,5 @@
         PUBLIC   _CalcAverage, _Sort
-        EXTRN _BUF:BYTE
+        EXTRN _BUF:BYTE, _BufferD:BYTE
 .386
 
 N    EQU  3
@@ -18,15 +18,94 @@ _TEXT     SEGMENT   USE16   PARA  PUBLIC  'CODE'
 	     ASSUME CS:_TEXT, SS: STACK1
 
 ;-------------------------------------------------;
+; 子程序名：Exchange
+; 功能：将两学生位置交换
+; 入口参数：存储位置1，存储位置2
+; 出口参数：无
+;-------------------------------------------------;
+Exchange PROC NEAR
+         PUSH  BP
+         MOV   BP, SP
+         PUSH  AX
+         PUSH  BX
+         PUSH  CX
+         PUSH  SI
+         PUSH  DI
+
+         MOV  AX, 4[BP]
+         MOV  BX, 6[BP]
+         
+         MOV  BP, DS
+         MOV  ES, BP
+
+         MOV  SI, AX                    ;AX → buffer
+         LEA  DI, _BufferD
+         MOV  CX, UNIT
+         CLD
+         REP  MOVSB
+
+         MOV  SI, BX                    ;BX → AX
+         MOV  DI, AX
+         MOV  CX, UNIT
+         CLD
+         REP  MOVSB
+
+         LEA  SI, _BufferD              ;buffer → BX
+         MOV  DI, BX
+         MOV  CX, UNIT
+         CLD
+         REP  MOVSB
+
+         POP  DI
+         POP  SI
+         POP  CX
+         POP  BX
+         POP  AX
+
+         POP  BP
+         ret 4
+Exchange ENDP
+;-------------------------------------------------;
 ; 子程序名：_Sort
 ; 功能：按平均分从高到低对学生排序，排序结果仍存放在原缓冲区中（冒泡排序）
 ; 入口参数：无
 ; 出口参数：无
 ;-------------------------------------------------;
-_Sort PROC NEAR
+_Sort    PROC NEAR
+        PUSHA
 
+        LEA   BX, _BUF
+        MOV   CX, N - 1
+Sort_L1:
+        PUSH  BX
+        PUSH  CX
+
+
+Sort_L2:
+        MOV   AL, [BX + average]
+        MOV   AH, [BX + UNIT + average]
+        CMP   AL, AH
+        JB    Sort_change
+        JMP   Sort_notChange 
+Sort_change:
+        MOV   DX, BX;
+        PUSH  DX
+        ADD   DX, UNIT
+        PUSH  DX
+        call  Exchange
+Sort_notChange:
+        ADD   BX, UNIT
+        LOOP  Sort_L2
+
+
+        POP   CX
+        POP   BX
+        ADD   BX, UNIT
+        LOOP  Sort_L1
+
+        POPA
         ret
-_Sort ENDP
+_Sort    ENDP
 
 ;-------------------------------------------------;
 ; 子程序名：_CalcAverage
