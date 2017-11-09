@@ -234,7 +234,6 @@ Sort_L1:
         PUSH  BX
         PUSH  CX
 
-
 Sort_L2:
         MOV   AL, [BX + average]
         MOV   AH, [BX + UNIT + average]
@@ -254,7 +253,6 @@ Sort_notChange:
 
         POP   CX
         POP   BX
-        ADD   BX, UNIT
         LOOP  Sort_L1
 
         POPA

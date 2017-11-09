@@ -71,7 +71,7 @@ Exchange ENDP
 ; 入口参数：无
 ; 出口参数：无
 ;-------------------------------------------------;
-_Sort    PROC NEAR
+_Sort   PROC NEAR
         PUSHA
 
         LEA   BX, _BUF
@@ -79,7 +79,6 @@ _Sort    PROC NEAR
 Sort_L1:
         PUSH  BX
         PUSH  CX
-
 
 Sort_L2:
         MOV   AL, [BX + average]
@@ -100,12 +99,11 @@ Sort_notChange:
 
         POP   CX
         POP   BX
-        ADD   BX, UNIT
         LOOP  Sort_L1
 
         POPA
         ret
-_Sort    ENDP
+_Sort   ENDP
 
 ;-------------------------------------------------;
 ; 子程序名：_CalcAverage

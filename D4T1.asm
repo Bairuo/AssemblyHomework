@@ -307,16 +307,17 @@ WaitCommend:
 
          CMP  BufferL, 1           ;根据用户选择的菜单项完成相应功能
          JNE  DisplayMenu
-         CMP  BufferD, '5'
-         JE   exit
-         CMP  BufferD, '4'
-         JE   Menu4
-         CMP  BufferD, '3'
-         JE   Menu3
-         CMP  BufferD, '2'
-         JE   Menu2
+
          CMP  BufferD, '1'
          JE   Menu1
+         CMP  BufferD, '2'
+         JE   Menu2
+         CMP  BufferD, '3'
+         JE   Menu3
+         CMP  BufferD, '4'
+         JE   Menu4
+         CMP  BufferD, '5'
+         JE   exit
 
          JMP  DisplayMenu
 
