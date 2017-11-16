@@ -5,14 +5,10 @@ STACK1    SEGMENT     USE16   STACK
 STACK1    ENDS
 
 
-DATA      SEGMENT     USE16
-
-
-DATA     ENDS
-
-
 CODE     SEGMENT   USE16   PARA  PUBLIC  'CODE'
 	     ASSUME CS:CODE, DS: DATA, SS: STACK1
+
+
 
 START:   MOV  AX, DATA
          MOV  DS, AX
@@ -20,6 +16,8 @@ START:   MOV  AX, DATA
          MOV  SS, AX
 
 
+         MOV  AX, 3510H
+         INT  21H
 
 
 exit:    MOV  AH,4CH    ;程序结束
