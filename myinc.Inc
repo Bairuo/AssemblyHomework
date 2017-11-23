@@ -42,26 +42,23 @@ aboutOK             equ 0
 
 listTitle           db 'List'
 num1 = $ - listTitle
-listForm            db 'Name        Chinese   Maths   English   Average   Grade'
+listForm            db 'Name              Chinese   Maths   English   Average   Grade'
 num2 = $ - listForm
 listLine            db '_______________________________________________________'
 num3 = $ - listLine
 
 
-unit = 10 + 4 + 3*4 + 3*4 + 1
+unit = 10 + 3*4 + 1
 StuDisplay  STRUCT
         stuName db '          '
-                db '    '
-        Chinese db 3  dup(0)
-                db '   '
-        Maths   db 3  dup(0)
-                db '   '
-        English db 3  dup(0)
-                db '   '
-        Average db 3  dup(0)
-                db '   '
+        Chinese db 3 dup(0)
+        Maths   db 3 dup(0)
+        English db 3 dup(0)
+        Average db 3 dup(0)
         Grade   db 0
 StuDisplay  ENDS
+
+buffer StuDisplay <>
 
 Student     STRUCT
         stuName db  '          '
@@ -69,17 +66,16 @@ Student     STRUCT
         Maths   db  0
         English db  0
         Average db  0
-        Grade   db  0
+        Grade   db  ' '
 Student     ENDS
 
 
-;S1  Student  <>
-S1  Student  <'xueba','1','2','3','4','5'>
-;S2  Student  <'xuezha', 46, 55, 58, 50>
-;S3  Student  <'zhangsan', 70, 86, 87, 77>
-;S4  Student  <'lisigsan', 67, 76, 61, 68>
-;S5  Student  <'wangwuan', 77, 56, 69, 69>
-;S6  Student  <'bairuo', 99, 100, 99, 99>
+S1  Student  <'xueba', 80, 86, 87>
+S2  Student  <'xuezha', 46, 55, 58>
+S3  Student  <'zhangsan', 70, 86, 87>
+S4  Student  <'lisigsan', 67, 76, 61>
+S5  Student  <'wangwuan', 77, 56, 69>
+S6  Student  <'bairuo', 99, 100, 99>
 
 
 ClassName			db 'DLGCLASS',0

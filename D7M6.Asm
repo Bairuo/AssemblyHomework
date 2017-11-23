@@ -2,10 +2,10 @@
 .model flat,stdcall
 option casemap:none
 
-include myinc.inc
+include jzr.inc
 
 .data
-  szCaption        db 'Assembly Window',0
+  szCaption        db 'bairuo',0
 
 .code
 
@@ -63,29 +63,119 @@ WinMain endp
 
 
 ;------------------窗口消息处理程序-------------------
-GetAssic proc uses eax, opd:DWORD, ops:DWORD
-
+GetAssic proc uses eax ebx ecx, opd:DWORD, ops:DWORD
+	mov ebx, ops
+	mov al, [ebx]
+	mov ebx, opd
+	mov ah, 0
+	.if al >= 100
+		mov [ebx], byte ptr '1'
+		mov [ebx] + 1, byte ptr '0'
+		mov [ebx] + 2, byte ptr '0'
+	.elseif al == 0
+		mov [ebx], byte ptr ' '
+		mov [ebx] + 1, byte ptr ' '
+		mov [ebx] + 2, byte ptr ' '
+	.elseif al < 10
+		add al, '0'
+		mov [ebx], al
+		mov [ebx] + 1, byte ptr ' '
+		mov [ebx] + 2, byte ptr ' '
+	.else
+		mov cl, 10
+		div cl
+		add al, '0'
+		add ah, '0'
+		mov [ebx], al
+		mov [ebx + 1], ah
+		mov [ebx + 2], byte ptr ' '
+	.endif
 
 	ret
 GetAssic endp
 
-PrintStudent proc uses esi edi, Dc:HDC, stu:DWORD, x:DWORD, y:DWORD
-LOCAL buffer:StuDisplay
+CalcAverage proc uses eax ecx esi edi edx, stu:DWORD
+	mov ax, 0
+	mov esi, stu
+	
+	add al, [esi + 12]
+
+	mov cl, [esi + 11]
+	movzx di, cl
+	add ax, di
+	add ax, di
+
+	mov cl, [esi + 10]
+	movzx di, cl
+	add ax, di
+	add ax, di
+	add ax, di
+	add ax, di
+	mov dl, 7
+	div dl
+	mov [esi + 13], al
+
+	.if al >= 90
+		mov [esi + 14], byte ptr 'A'
+	.elseif al >= 80
+		mov [esi + 14], byte ptr 'B'
+	.elseif al >= 70
+		mov [esi + 14], byte ptr 'C'
+	.elseif al >= 60
+	    mov [esi + 14], byte ptr 'D'
+	.else
+		mov [esi + 14], byte ptr 'F'
+	.endif
+
+	ret
+CalcAverage endp
+
+PrintStudent proc uses esi edi ecx ebx, Dc:HDC, stu:DWORD, x:DWORD, y:DWORD
+	mov ecx, 0
+	mov esi, stu
+	mov edi, offset buffer
+PrintStudent_L:
+	.if ecx < 10
+		mov bl, [esi + ecx]
+		mov [edi + ecx], bl
+		inc ecx
+		jmp PrintStudent_L
+	.endif
+
 	mov esi, x
 	mov edi, stu
-	;转移名字
-	
-	invoke  GetAssic, addr buffer.Chinese, addr [edi + 10]
 
-	;invoke  TextOut, Dc, esi, y, addr buffer, unit
-	;invoke TextOut, Dc, esi, y, edi, 10
-	;invoke TextOut, Dc, esi, y, addr [edi + 10], 1
-	;invoke TextOut, Dc, x + 17, y, addr stu.Maths, 1
-	;invoke TextOut, Dc, x + 20, y, addr stu.English, 1
-	;invoke TextOut, Dc, x + 23, y, addr stu.Average, 1
-	;invoke TextOut, Dc, x + 26, y, addr stu.Grade, 1
+	invoke  GetAssic, addr buffer.Chinese, addr [edi + 10]
+	invoke  GetAssic, addr buffer.Maths, addr [edi + 11]
+	invoke  GetAssic, addr buffer.English, addr [edi + 12]
+	invoke  GetAssic, addr buffer.Average, addr [edi + 13]
+	mov cl, [edi + 14]
+	mov buffer.Grade, cl
+
+	invoke  TextOut, Dc, esi, y, addr buffer.stuName, 10
+	add esi, 95
+	invoke  TextOut, Dc, esi, y, addr buffer.Chinese, 3
+	add esi, 65
+	invoke  TextOut, Dc, esi, y, addr buffer.Maths, 3
+	add esi, 55
+	invoke  TextOut, Dc, esi, y, addr buffer.English, 3
+	add esi, 60
+	invoke  TextOut, Dc, esi, y, addr buffer.Average, 3
+	add esi, 65
+	invoke  TextOut, Dc, esi, y, addr buffer.Grade, 1
+	
 	ret
 PrintStudent endp
+
+DisplayList proc Dc:HDC
+    invoke PrintStudent, Dc, addr S1, 10, 85
+	invoke PrintStudent, Dc, addr S2, 10, 110
+	invoke PrintStudent, Dc, addr S3, 10, 135
+	invoke PrintStudent, Dc, addr S4, 10, 160
+	invoke PrintStudent, Dc, addr S5, 10, 185
+	invoke PrintStudent, Dc, addr S6, 10, 210
+	ret
+DisplayList endp
 
 WndProc proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 LOCAL ps :PAINTSTRUCT
@@ -103,12 +193,18 @@ LOCAL Dc:HDC
 		.elseif eax == IDM_HELP_ABOUT
             invoke MessageBoxA, 0, addr aboutMessage, addr aboutTitle, aboutOK
 		.elseif eax == IDM_FILE_AVERAGE
-		    ;invoke SelectGate,CurrGate
+		    invoke CalcAverage, addr S1
+			invoke CalcAverage, addr S2
+			invoke CalcAverage, addr S3
+			invoke CalcAverage, addr S4
+			invoke CalcAverage, addr S5
+			invoke CalcAverage, addr S6
+			invoke DisplayList, Dc
 		.elseif eax == IDM_FILE_LIST
 		    invoke TextOut, Dc, 10, 15, addr listTitle, num1   
             invoke TextOut, Dc, 10, 40, addr listForm, num2
             invoke TextOut, Dc, 10, 60, addr listLine, num3
-            invoke PrintStudent, Dc, addr S1, 10, 85
+			invoke DisplayList, Dc
 		.endif
 	.elseif eax == WM_CLOSE
 		invoke DestroyWindow,hWin
