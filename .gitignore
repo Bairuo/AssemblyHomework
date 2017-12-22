@@ -1,9 +1,2 @@
-/*
-!*.asm
-!.gitignore
-!Readme.md
-!*.cpp
-!*.inc
-!*.c
-!*.hpp
-!*.txt
+*.exe
+*.o
