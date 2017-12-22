@@ -4,3 +4,6 @@
 !Readme.md
 !*.cpp
 !*.inc
+!*.c
+!*.hpp
+!*.txt
