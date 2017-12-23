@@ -1,11 +1,14 @@
-/* Binary Tree On Chain Structure */
+// Bitree.cpp
+// Author: IS1603 jzr (Bairuo)
+// Description : Binary Tree On Chain Structure.
+
 #include <stdio.h>
 #include <iostream>
 #include "Bitree.hpp"
 #define TREE_MAXN 10
 
-bool InitBiTree(BiTree *T);
-bool DestroyBiTree(BiTree *T);
+bool InitBiTree(BiTree* &T);
+bool DestroyBiTree(BiTree* &T);
 bool ClearBiTree(BiTree *T);
 bool Print(ElemType e);
 bool Save(BiTNode *T);
@@ -197,7 +200,6 @@ int main(void){
          depth1 = pt->lchild == NULL ? 0 : pt->lchild->depth;
          depth2 = pt->rchild == NULL ? 0 : pt->rchild->depth;
          pt->depth = std::max(depth1, depth2) + 1;
-         std::cout << depth1 << " " << depth2 << std::endl;
 
          while(pt->parent != pt)
          {
@@ -278,8 +280,16 @@ int main(void){
          printf("\n----ChangeTree----\n");
          printf("Please enter the tree number you want: ");
          scanf("%d", &id);
-         ptree = id - 1;
-         printf("\nYou have changed current tree.\n");
+         if(id - 1 >= 0 && id - 1 < TREE_MAXN)
+         {
+             ptree = id - 1;
+             printf("\nYou have changed current tree.\n");
+         }
+         else
+         {
+             printf("\nID illegal\n");
+         }
+
          getchar();getchar();
          break;
        case 23:
@@ -323,13 +333,15 @@ int main(void){
   return 0;
 }//end of main()
 
-bool InitBiTree(BiTree *T)
+bool InitBiTree(BiTree* &T)
 {
     if(T != NULL)return false;
     T = (BiTree *)malloc(sizeof(BiTree));
-    return T == NULL;
+    if(T != NULL)
+        T->depth = 0;
+    return T != NULL;
 }
-bool DestroyBiTree(BiTree *T)
+bool DestroyBiTree(BiTree* &T)
 {
     if(T == NULL)return false;
     FreeBiTree(T);

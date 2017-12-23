@@ -1,11 +1,7 @@
-/*
- * Bitree.hpp
- *
- * Definitions of types and prototypes of functions for Binary Tree On Chain Structure.
- *
- * NOTE: The file manipulation functions provided by Bairuo, IS1603 jzr.
- *
- */
+// Bitree.hpp
+// Author: IS1603 jzr (Bairuo)
+// Description : Functions for Binary Tree On Chain Structure.
+
 
 #ifndef Bitree_H_
 #define Bitree_H_
@@ -13,7 +9,6 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <queue>
-#include <algorithm>
 
 
 #define TRUE 1
@@ -106,6 +101,7 @@ status FreeBiTree(BiTree* &T)
 }
 bool BiTreeEmpty(BiTree *T)
 {
+    if(T == NULL)return true;
     return T->depth == 0;
 }
 int BiTreeDepth(BiTree *T)
@@ -124,6 +120,7 @@ BiTNode *Get(BiTree *T, ElemKey e)
         BiTNode *T2 = Get(T->rchild, e);
         if(T2 != NULL)return T2;
     }
+    return NULL;
 }
 
 ElemValue Value(BiTree *T, ElemKey e)
@@ -305,7 +302,8 @@ status PostOrderTraverse(BiTree *T, bool(* Visit)(ElemType e))
 status LevelOrderTraverse(BiTree *T, bool(* Visit)(ElemType e))
 {
     std::queue<BiTNode *> q;
-    q.push(T);
+    if(T && T->depth > 0)
+        q.push(T);
     while(!q.empty())
     {
         BiTree *t = q.front();
